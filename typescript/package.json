@@ -8,11 +8,15 @@
     "telegram-bot": "ts-node telegram_bot.ts"
   },
   "dependencies": {
+    "@ethereumjs/tx": "^5.1.0",
+    "fiber-ts": "^1.9.2",
     "ts-node": "^10.9.1",
-    "viem": "^1.19.8"
+    "viem": "^1.19.8",
+    "ws": "^8.14.2"
   },
   "devDependencies": {
     "@types/node": "^20.10.0",
+    "@types/ws": "^8.5.10",
     "typescript": "^5.3.2"
   }
 }

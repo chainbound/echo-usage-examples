@@ -141,7 +141,7 @@ pub async fn main() -> anyhow::Result<()> {
     let api_key = std::env::var("FIBER_TEST_KEY")?;
     let private_key = std::env::var("ETHEREUM_TEST_PK")?;
 
-    tracing::info!("Starting Uniswap Arbitrage bot example...");
+    tracing::info!("Starting Telegram bot operator example...");
 
     // Listen to new pending transactions from Fiber
     let stream_type = StreamType::Transactions;
