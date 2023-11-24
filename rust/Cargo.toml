@@ -1,0 +1,32 @@
+[package]
+name = "echo-examples"
+description = "Example usages of Echo"
+version = "0.1.0"
+edition = "2021"
+license = "MIT"
+authors = ["Chainbound <admin@chainbound.io>"]
+repository = "https://github.com/chainbound/echo-examples"
+homepage = "https://github.com/chainbound/echo-examples"
+
+[dependencies]
+anyhow = "1.0.75"
+inquire = "0.6.2"
+tracing = "0.1.40"
+serde = "1.0.193"
+futures = "0.3"
+serde_json = "1.0.108"
+tracing-subscriber = "0.3.18"
+clap = { version = "4.4.8", features = ["derive"] }
+ethers = {  version = "2", features = ["ws", "rustls"] }
+tokio = { version = "1.18", features = ["full"] }
+artemis-core = { git = "https://github.com/merklefruit/artemis.git", branch = "feat/add-websocket" }
+chainbound-artemis = { git = "https://github.com/merklefruit/artemis.git", branch = "feat/add-websocket" }
+async-trait = "0.1.74"
+
+[[bin]]
+name = "uniswap-arb"
+path = "./uniswap_arb.rs"
+
+[[bin]]
+name = "telegram-bot"
+path = "./telegram_bot.rs"
