@@ -1,11 +1,16 @@
 # typescript examples
 
-For the TypeScript examples, run the following commands:
+## Usage
+
+To run the TypeScript examples, run the following commands from this directory:
 
 ```shell
-# uniswap arb example
+# install dependencies first
+yarn
+
+# run the uniswap arb example
 yarn uniswap-arb
 
-# telegram bot example
+# run the telegram bot example
 yarn telegram-bot
 ```
