@@ -1,11 +1,12 @@
 import WebSocket from "ws";
 import { TypedTransaction } from "@ethereumjs/tx";
 import { Client as FiberClient } from "fiber-ts";
-import { createPublicClient, webSocket } from "viem";
+import { createPublicClient, createWalletClient, webSocket } from "viem";
 import { privateKeyToAccount } from "viem/accounts";
 import { mainnet } from "viem/chains";
 
 const ECHO_WS_URL = "wss://echo-rpc.chainbound.io/ws";
+const RPC_WS_URL = "wss://eth.merkle.io";
 const FIBER_URL = "beta.fiberapi.io:8080";
 
 async function uniswapArbitrage() {
@@ -18,11 +19,16 @@ async function uniswapArbitrage() {
   console.log("Starting Uniswap Arbitrage Bot example...");
 
   const provider = createPublicClient({
-    transport: webSocket("wss://eth.llamarpc.com"),
+    transport: webSocket(RPC_WS_URL),
     chain: mainnet,
   });
-  
-  const account = privateKeyToAccount('0x...')
+
+  const account = privateKeyToAccount(`0x${privateKey}`);
+  const walletClient = createWalletClient({
+    transport: webSocket(RPC_WS_URL),
+    chain: mainnet,
+    account,
+  });
 
   const echoClient = new WebSocket(ECHO_WS_URL, {
     headers: { "x-api-key": fiberApiKey },
@@ -34,9 +40,9 @@ async function uniswapArbitrage() {
   console.log("Connected to Fiber");
 
   // listen for receipt notifications from Echo
-  echoClient.on("message", async (data: string) => {
-    const { receiptNotification } = JSON.parse(data);
-    console.log("Received receipt from Echo:", receiptNotification);
+  echoClient.on("message", async (data: Buffer) => {
+    let text = data.toString("utf-8");
+    console.log("Received message from Echo:", text);
   });
 
   // for demo purposes
@@ -44,33 +50,46 @@ async function uniswapArbitrage() {
 
   // subscribe to pending transactions
   fiberClient.subscribeNewTxs().on("data", async (tx: TypedTransaction) => {
-    console.log("Received new transaction from Fiber:", toHexString(tx.hash()));
-
     // for demo purposes, only send one transaction. In production, you would
     // want to check for conditions that would make the arbitrage profitable
     if (!canSend) return;
     canSend = false;
 
-    const backrun = 
+    console.log("Received new transaction from Fiber:", toHexString(tx.hash()));
+    console.log("Sending arbitrage bundle...");
+
+    // we create a fake backrun tx (sending 42 wei to ourselves) for demo purposes
+    const backrun = await walletClient.prepareTransactionRequest({
+      to: account.address,
+      value: BigInt(42),
+    });
+    const backrunRawSigned = await walletClient.signTransaction(backrun);
 
     const nextBlockNumber = Number(await provider.getBlockNumber()) + 1;
 
     // send a bundle to Echo with the transaction in the mempool and a backrun
     const bundle = {
-      txs: [tx.serialize(), ],
+      txs: [toHexString(tx.serialize()), backrunRawSigned],
       blockNumber: nextBlockNumber,
       usePublicMempool: false,
+      awaitReceipt: true,
+      awaitReceiptTimeoutMs: 60_000,
+      mevBuilders: ["titan", "rsync", "beaverbuild"],
     };
 
-    echoClient.send(
-      JSON.stringify({
-        id: 1,
-        jsonrpc: "2.0",
-        method: "eth_sendBundle",
-        params: [bundle],
-      })
-    );
+    const rpcRequest = JSON.stringify({
+      id: 1,
+      jsonrpc: "2.0",
+      method: "eth_sendBundle",
+      params: [bundle],
+    });
+
+    console.log("Sending bundle to Echo:", rpcRequest);
+    echoClient.send(rpcRequest);
   });
+
+  // wait instead of exiting
+  await new Promise(() => {});
 }
 
 function toHexString(byteArray: Uint8Array): string {
