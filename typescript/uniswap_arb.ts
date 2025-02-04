@@ -5,7 +5,7 @@ import { createPublicClient, createWalletClient, webSocket } from "viem";
 import { privateKeyToAccount } from "viem/accounts";
 import { mainnet } from "viem/chains";
 
-const ECHO_WS_URL = "wss://echo-rpc.chainbound.io/ws";
+const ECHO_WS_URL = "wss://v1.echo-rpc.io/ws";
 const RPC_WS_URL = "wss://eth.merkle.io";
 const FIBER_URL = "beta.fiberapi.io:8080";
 
